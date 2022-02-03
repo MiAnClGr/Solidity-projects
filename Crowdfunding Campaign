@@ -75,8 +75,26 @@ pragma solidity 0.8.5;
 
     }
 
-    function voteRequest() public {
-        newRequest.completed = true;
-        newRequest.noOfVoters ++;
+   function voteRequest(uint _requestNo) public {
+        require(Contributors[msg.sender] > 0, "you must be a contributor to vote");
+        Request storage thisRequest = requests[_requestNo];
+        require(thisRequest.voters[msg.sender] == false, "you have already voted");
+        thisRequest.voters[msg.sender] = true;
+        thisRequest.noOfVoters ++;
+
         
     }
+
+    function makePayment(uint _requestNo) public onlyAdmin{
+        require(raisedAmount >= goal);
+        Request storage thisRequest = requests[_requestNo];
+        require(thisRequest.completed == false, "This request has been completed");
+        require(thisRequest.noOfVoters > noOfContributors /2);
+
+        thisRequest.recipient.transfer(thisRequest.value);
+
+        thisRequest.completed = true;
+
+    }
+
+}
