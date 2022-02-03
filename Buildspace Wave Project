@@ -6,20 +6,29 @@ import "hardhat/console.sol";
 
 contract WavePortal {
 
-    uint totalWaves;
+    uint256 totalWaves;
+
+
+    mapping(address => uint) public noOfWaves;
+
+    address[] public waves;
 
     constructor() {
         console.log("Yo yo, I am a contract and I am smart");
-        
     }
 
     function wave() public {
         totalWaves += 1;
         console.log("%s has waved!", msg.sender);
+        waves.push(msg.sender);
+        noOfWaves[msg.sender] +=1;
     }
 
-    function getTotalWaves() public view returns(uint) {
+    function getTotalWaves() public view returns(uint256) {
         console.log("We have %d total waves!", totalWaves);
         return totalWaves;
     }
+
+
+
 }
