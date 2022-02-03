@@ -20,7 +20,7 @@ interface ERC20Interface {
 }
  
  
-contract CUNT is ERC20Interface{
+contract ZongToken is ERC20Interface{
     string public name = "ZongToken";
     string public symbol = "ZONG";
     uint public decimals = 0; //18 is very common
