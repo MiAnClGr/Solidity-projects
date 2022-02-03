@@ -1,0 +1,55 @@
+//SPDX-License-Identifier: GPL-3.0
+ 
+pragma solidity >=0.5.0 <0.9.0;
+
+contract lottery{
+
+    //need
+    // an array to keep track of people entering 
+    // a manager to run the lottery and distribute funds to the winner
+    // a function to receive the entries (receive keyword)
+    // a manager only function that picks the winner  
+
+    address payable[] public entrants;
+    address public manager;
+
+    constructor() public {
+        manager = msg.sender;
+    }
+
+    modifier onlyManager(){
+        require(msg.sender == manager);
+    _;
+    }
+
+    receive() payable external{
+        require(msg.value == 1 ether, "incorrect amount");
+        entrants.push(payable(msg.value));
+    }
+
+    function getBalance() public view onlyManager returns(uint){
+        return address(this).balance;
+    }
+
+    function randomNumber() internal view returns(uint){
+        return uint(keccak256(abi.encodePacked(block.difficulty, block.timestamp, entrants.length)));
+    }
+
+    function pickWinner() public onlyManager{
+        require(entrants.length >= 3);
+        uint rand = randomNumber();
+        address payable winner;
+
+        uint index = rand % entrants.length;
+
+        winner = entrants[index];
+
+        winner.transfer(getBalance());
+
+        entrants = new address payable[](0);
+
+    }
+
+    
+
+}
