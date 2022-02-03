@@ -1,0 +1,82 @@
+// SPDX-License-Identifier: GPL-3.0
+pragma solidity 0.8.5;
+ 
+
+ contract CrowdFunding{
+
+
+    //state variables - mapping Contributors, noOfContributors,  minimumContribution, admin, balance, deadline
+    // function - contribute, get balance, give a refund, vote for a goal
+
+    mapping(address => uint) public Contributors;
+    address public admin;
+    uint public noOfContributors;
+    uint public minimumContribution;
+    uint public balance;
+    uint public deadline;
+    uint public goal;
+    uint public raisedAmount; 
+
+    struct Request{
+        string description;
+        uint value;
+        address payable recipient;
+        bool completed;
+        uint noOfVoters;
+        mapping(address => bool) voters;
+
+
+    }
+
+    mapping(uint => Request) public requests;
+
+    uint public numRequests;
+
+    modifier onlyAdmin(){
+        require(msg.sender == admin);
+    _;
+    }
+    constructor(uint _goal, uint _deadline) {
+        goal =  _goal; 
+        deadline =  block.timestamp + _deadline;
+        minimumContribution = 1 ether;
+        admin = msg.sender;
+    }
+
+    function contribute() public payable {
+        require(msg.value <= minimumContribution);
+        require(block.timestamp <= deadline);
+
+    }
+
+    function getBalance() public view returns(uint) {
+        return address(this).balance;
+    }
+
+    function getRefund() public {
+        require(block.timestamp < deadline);
+        require(raisedAmount < goal);
+        require(Contributors[msg.sender] > 0);
+    
+        payable(msg.sender).transfer(Contributors[msg.sender]);
+
+        Contributors[msg.sender] == 0;
+        
+        }
+
+    function createRequest(string memory _description, address payable _recipient, uint _value) public onlyAdmin {
+        Request storage newRequest = requests[numRequests];
+        numRequests ++;
+        newRequest.description = _description;
+        newRequest.value = _value;
+        newRequest.recipient = _recipient;
+        newRequest.completed = false;
+        newRequest.noOfVoters = 0;
+
+    }
+
+    function voteRequest() public {
+        newRequest.completed = true;
+        newRequest.noOfVoters ++;
+        
+    }
