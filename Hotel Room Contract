@@ -1,0 +1,41 @@
+// SPDX-License-Identifier: GPL-3.0
+
+pragma solidity ^0.6.0;
+
+contract hotelRoom{
+
+    //keep track of room state - enum
+    //create a function to book the room
+    //create an event to say the room is booked 
+    //create a function to reset the room 
+
+    enum status {vacant, notVacant}
+
+    address payable public owner;
+    status public currentStatus;
+    
+
+    constructor() public{
+        owner = msg.sender;
+        currentStatus = status.vacant;
+    }
+
+    modifier payment(){
+        require(msg.value == 2 ether, "Not enough Eth");
+    _;
+    }
+    
+    modifier roomBooked(){
+        require(currentStatus == status.vacant);
+    _;    
+    }
+
+    function book() public payable payment roomBooked{
+        owner.transfer(msg.value);
+    }
+
+    function resetRoom() public{
+        currentStatus = status.vacant;
+    }
+
+}
