@@ -35,7 +35,7 @@ contract ZongToken is ERC20Interface{
     
     
     constructor(){
-        totalSupply = 420420420;
+        totalSupply = 1000000;
         founder = msg.sender;
         balances[founder] = totalSupply;
     }
