@@ -1,0 +1,95 @@
+// SPDX-License-Identifier: GPL-3.0
+
+pragma solidity >=0.7.0 <0.9.0;
+
+
+contract MusicPay {
+
+    // start a contract with venue that with an agreed upon payment, to be paid at a particular time (after performance)
+    // variable - payment, time of payment
+
+    uint public payment;
+    uint public performanceTime;
+
+    bool public hasArtistAgreed;
+    bool public hasVenueAgreed;
+    
+    address payable artist;
+    address venue; 
+
+    string public interstring;
+
+    enum State {notCompleted, bookingComplete, performanceCompleted, paymentComplete}
+
+    State public currentState;
+
+    constructor(uint _payment, address _venue, address payable _artist) {
+        payment = _payment;
+        artist = _artist;
+        venue = _venue;
+       
+    }
+
+    modifier onlyVenue() {
+        require(msg.sender == venue);
+        _;
+    }
+
+    modifier onlyArtist() {
+        require(msg.sender == artist);
+        _;
+    }
+
+    function setPerformanceTime(uint _performanceTime) public {
+        performanceTime = block.timestamp + _performanceTime;
+
+    }
+
+  
+    function bookArtist() public payable onlyVenue {
+        require(msg.value == payment);
+        require(currentState == State.notCompleted);
+        hasVenueAgreed = true;
+        
+    }
+
+    function agreement() public onlyArtist {
+        
+        hasArtistAgreed = true;
+        
+
+        if(hasArtistAgreed && hasVenueAgreed) {
+            currentState = State.bookingComplete;
+        }
+    }
+
+    function confirmPerformance() public payable {
+        require(currentState == State.bookingComplete);
+        currentState = State.performanceCompleted;
+    }
+
+    function beenPaid() public view returns(bool) {
+        if(address(this).balance == payment){
+        return true;
+        }else{
+        return false;}
+    }
+
+    function withdraw(uint amount) public payable onlyArtist {
+        amount = amount * 1 ether;
+        require(amount <= address(this).balance);
+        require(block.timestamp >= performanceTime);
+        require(currentState == State.performanceCompleted);
+        payable(msg.sender).transfer(amount);
+       
+        
+    }
+
+    function checkBalance() public view returns(uint) {
+        return address(this).balance;
+    }
+
+
+
+
+}
