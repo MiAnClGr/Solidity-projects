@@ -1,0 +1,30 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.2;
+
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+
+contract MyNftToken is ERC721, Ownable {
+    constructor() ERC721("SimpleNFT", "SIMPLE") {
+       
+    }
+
+    mapping(uint => address) public Minters;
+    mapping(uint => uint) public Ids;
+    mapping(uint => bool) public Minted;
+    
+    uint public tokenCount = 0;
+    uint tokenAmount = 10000;
+
+    function minting(uint _tokenId) public payable {
+        require(_tokenId <= tokenAmount);
+        require(tokenCount <= tokenAmount);
+        require(msg.value == 1 ether);
+        require(Minted[_tokenId] == false);
+        Ids[tokenCount] = _tokenId;
+        Minted[_tokenId] = true;
+        Minters[_tokenId] = msg.sender;
+        _safeMint(msg.sender, _tokenId);
+        tokenCount ++;
+    }
+}
