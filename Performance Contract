@@ -2,85 +2,149 @@
 
 pragma solidity >=0.7.0 <0.9.0;
 
+import "./createArtist.sol";
 
-contract MusicPay {
+contract MusicPay is createArtist {
 
     // start a contract with venue that with an agreed upon payment, to be paid at a particular time (after performance)
     // variable - payment, time of payment
 
-    uint public payment;
-    uint public performanceTime;
+    // uint public payment;
+    // uint public performanceTime;
+
+    address owner;
 
     bool public hasArtistAgreed;
     bool public hasVenueAgreed;
     
-    address payable artist;
-    address venue; 
+    address payable public artist;
+    // address public venue; 
 
-    string public interstring;
 
-    enum State {notCompleted, bookingComplete, performanceCompleted, paymentComplete}
+    enum State {notCompleted, bookingComplete, performanceCompleted, paymentComplete} // need to fix
 
-    State public currentState;
+    mapping(uint => Gig) public Gigs;
+    uint public gigNumber = 0;
 
-    constructor(uint _payment, address _venue, address payable _artist) {
-        payment = _payment;
-        artist = _artist;
-        venue = _venue;
+    struct Gig {
+        uint _gigNumber;
+        uint payment;
+        uint time;
+        bool agreed;
+        address venue;
+        string venueName;
+        string artistName;
+        State currentState;
+        bool depositPaid;
+        uint agreementTime;
+        
+    }
+
+    event bookingMade (uint _payment, uint _time, string _venueName);
+    event bookingFeePaid (bool _depositPaid);
+
+    
+
+   
+
+    constructor() {
+        msg.sender == owner;
+    }
+        
        
-    }
+    // }
 
-    modifier onlyVenue() {
-        require(msg.sender == venue);
-        _;
-    }
+    // modifier onlyVenue() {
+    //     require(msg.sender == venue);
+    //     _;
+    // }
 
-    modifier onlyArtist() {
-        require(msg.sender == artist);
-        _;
-    }
+    // modifier onlyVenue(uint _gigNum){
+    //     require(_gigNum == Gigs[gigRequest]);
+    //     require(msg.sender == gigRequest.venue);
+    //     _;
+    // }
 
-    function setPerformanceTime(uint _performanceTime) public {
-        performanceTime = block.timestamp + _performanceTime;
+    // modifier onlyArtist() {
+    //     require(msg.sender == artist);
+    //     _;
+    // }
 
+ 
+
+    function bookingRequest(uint _payment, uint _time, string memory _venueName, string memory _artistName) public payable {
+
+        Gig storage gigRequest = Gigs[gigNumber];
+        gigNumber ++;
+        gigRequest._gigNumber = gigNumber;
+        gigRequest.payment = _payment;
+        gigRequest.time = block.timestamp + _time;
+        gigRequest.venueName = _venueName;
+        gigRequest.artistName = _artistName;
+        hasVenueAgreed = true;
+        gigRequest.venue = msg.sender;
+        emit bookingMade(_payment, block.timestamp, _venueName);
+        
     }
 
   
-    function bookArtist() public payable onlyVenue {
-        require(msg.value == payment);
-        require(currentState == State.notCompleted);
-        hasVenueAgreed = true;
-        
+    function payBookingDeposit(uint _gigNum) public payable {
+        Gig storage gigRequest = Gigs[_gigNum];
+        require(block.timestamp < (gigRequest.agreementTime + 86400)); // 24 hours to pay 
+        require(msg.sender == gigRequest.venue);
+        require(msg.value == gigRequest.payment);
+       // require(gigRequest.currentState == State.notCompleted);
+        require(gigRequest.agreed == true);
+        gigRequest.depositPaid = true;
+        emit bookingFeePaid(true);    
     }
 
-    function agreement() public onlyArtist {
-        
-        hasArtistAgreed = true;
-        
 
-        if(hasArtistAgreed && hasVenueAgreed) {
-            currentState = State.bookingComplete;
+    function agreement(uint _gigNum) public {
+        Gig storage gigRequest = Gigs[_gigNum];
+        require(msg.sender == ArtistsbyAddress[gigRequest.artistName]);
+        gigRequest.agreed = true;
+        gigRequest.agreementTime = block.timestamp;
+
+        if(gigRequest.agreed && hasVenueAgreed) {
+            gigRequest.currentState = State.bookingComplete;
         }
     }
 
-    function confirmPerformance() public payable {
-        require(currentState == State.bookingComplete);
-        currentState = State.performanceCompleted;
+
+    function confirmPerformance(uint _gigNum) public {
+        Gig storage gigRequest = Gigs[_gigNum];
+        require(msg.sender == gigRequest.venue);
+        require(block.timestamp > gigRequest.time);
+        require(gigRequest.depositPaid == true);
+        require(gigRequest.currentState == State.bookingComplete);
+        gigRequest.currentState = State.performanceCompleted;
+        
     }
 
-    function beenPaid() public view returns(bool) {
-        if(address(this).balance == payment){
-        return true;
-        }else{
-        return false;}
+
+    function beenPaid(uint _gigNum) public view returns(bool) {
+        Gig storage gigRequest = Gigs[_gigNum];
+        require(msg.sender == ArtistsbyAddress[gigRequest.artistName]);
+        if(gigRequest.depositPaid == true){
+            return true;
+        }
+        
+        else {
+            return false;
+        }
+            
+        
     }
 
-    function withdraw(uint amount) public payable onlyArtist {
-        amount = amount * 1 ether;
-        require(amount <= address(this).balance);
-        require(block.timestamp >= performanceTime);
-        require(currentState == State.performanceCompleted);
-        payable(msg.sender).transfer(amount);
+    function withdraw(uint _gigNum) public payable {
+
+        Gig storage gigRequest = Gigs[_gigNum];
+        require(msg.sender == ArtistsbyAddress[gigRequest.artistName]);
+        require(gigRequest.depositPaid == true);
+        require(block.timestamp >= gigRequest.time);
+        require(gigRequest.currentState == State.performanceCompleted);
+        payable(msg.sender).transfer(gigRequest.payment);
        
         
     }
