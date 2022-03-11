@@ -1,0 +1,37 @@
+// SPDX-License-Identifier: GPL-3.0
+
+pragma solidity >=0.7.0 <0.9.0;
+
+
+contract createArtist {
+
+    mapping(string => address) public ArtistsbyAddress;
+    mapping(uint => Artist) public Artists;
+    uint artistNumber = 1;
+    
+
+    struct Artist {
+        string name;
+        string genre;
+
+    }
+
+
+    function createNewArtist(string memory _name, string memory _genre) public {
+        
+        Artist storage newArtist = Artists[artistNumber];
+        newArtist.name = _name;
+        newArtist.genre = _genre;
+        artistNumber ++;
+        address payable artistAddress = payable(msg.sender);
+        ArtistsbyAddress[newArtist.name] = payable(artistAddress);
+        
+
+    } 
+
+    function findArtistAddress(string memory _enterName) public view returns(address) { 
+        return ArtistsbyAddress[_enterName];
+
+    }
+
+}
