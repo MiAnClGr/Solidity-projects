@@ -5,11 +5,12 @@ pragma solidity >=0.7.0 <0.9.0;
 import "./ArtistProfile.sol";
 
 
-contract CreateArtist {
+contract ArtistFactory {
 
     mapping(string => address) public ArtistbyName;
     mapping(address => string) public ArtistbyAddress;
-    uint artistNumber = 1;
+    //uint artistNumber = 1;
+    mapping(string => bool) public doesArtistExist;
 
 
     
@@ -17,6 +18,7 @@ contract CreateArtist {
         ArtistProfile artistProfile = new ArtistProfile(_artistName);
         ArtistbyName[_artistName] = address(artistProfile);
         ArtistbyAddress[address(artistProfile)] = _artistName;
+        doesArtistExist[_artistName] = true;
 
     }
 
