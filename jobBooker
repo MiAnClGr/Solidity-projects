@@ -2,7 +2,7 @@
 
 pragma solidity >=0.7.0 <0.9.0;
 
-contract jobBooker {
+contract JobBooker {
 
     address public owner;
 
@@ -26,8 +26,8 @@ contract jobBooker {
     uint jobNumber = 0;
     uint public rate = 10000000000000000;
 
-    constructor() {
-        owner = msg.sender;
+    constructor(address _owner) {
+        owner = _owner;
     }
 
     function createJob(string memory _contractName, address _client) public {
@@ -71,4 +71,14 @@ contract jobBooker {
     }
 
 
+}
+
+contract jobBookerFactory {
+
+    mapping(address => JobBooker) public owners;
+
+     function createJobBooker() public {
+        JobBooker jobBooker = new JobBooker(msg.sender);
+        owners[msg.sender] = jobBooker;
+    }
 }
