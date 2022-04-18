@@ -25,9 +25,11 @@ contract JobBooker {
 
     uint jobNumber = 0;
     uint public rate = 10000000000000000;
-
+    address public factoryAddress;
+    
     constructor(address _owner) {
         owner = _owner;
+        factoryAddress = msg.sender;
     }
 
     function createJob(string memory _contractName, address _client) public {
@@ -61,12 +63,14 @@ contract JobBooker {
 
     function payJob(uint _jobNumber) public payable {
         Job storage job = Jobs[_jobNumber];
-        require(msg.value == job.cost, "incorrect payment");
-        require(msg.sender == job.client);
-        require(job.state == jobState.finalised);
+        // require(msg.value == job.cost, "incorrect payment");
+        // require(msg.sender == job.client);
+        // require(job.state == jobState.finalised);
         job.paid = true;
         job.state = jobState.paid;
 
+        uint fee = msg.value/1000;
+        //payable(factoryAddress).transfer(fee);
         payable(owner).transfer(address(this).balance);
     }
 
@@ -80,5 +84,9 @@ contract jobBookerFactory {
      function createJobBooker() public {
         JobBooker jobBooker = new JobBooker(msg.sender);
         owners[msg.sender] = jobBooker;
+    }
+
+    function balance() public view returns(uint) {
+        return address(this).balance;
     }
 }
