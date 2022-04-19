@@ -2,7 +2,7 @@
 
 pragma solidity >=0.7.0 <0.9.0;
 
-contract JobBooker {
+contract Freelancer {
 
     address public owner;
 
@@ -77,16 +77,19 @@ contract JobBooker {
 
 }
 
-contract jobBookerFactory {
+contract freelancerFactory {
 
     mapping(address => JobBooker) public owners;
 
-     function createJobBooker() public {
-        JobBooker jobBooker = new JobBooker(msg.sender);
-        owners[msg.sender] = jobBooker;
+     function createFreelancer() public {
+        Freelancer freelancer = new Freelancer(msg.sender);
+        owners[msg.sender] = freelancer;
     }
 
     function balance() public view returns(uint) {
         return address(this).balance;
+    }
+    
+    receive() external payable {
     }
 }
