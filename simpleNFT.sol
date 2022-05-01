@@ -74,7 +74,7 @@ contract simpleNFT is IERC721Metadata, IERC721Enumerable, ERC721Interface {
         require(owners[_tokenId] == address(0));
 
         balances[_to] += 1;
-        owners[_tokenId] = msg.sender;
+        owners[_tokenId] = _to;
         allTokens.push(_tokenId);
 
         tokenIndex ++;
