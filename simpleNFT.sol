@@ -122,7 +122,7 @@ contract simpleNFT is IERC721Metadata, IERC721Enumerable, ERC721Interface {
     function setApprovalForAll(address _operator, bool _approved) override public {
         require(msg.sender != _operator);
 
-        operatorApprovals[msg.sender][_operator] = true;
+        operatorApprovals[msg.sender][_operator] = _approved;
     }
 
     function getApproved(uint _tokenId) override public view returns(address) {
