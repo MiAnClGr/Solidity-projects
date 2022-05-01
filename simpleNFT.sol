@@ -63,14 +63,14 @@ contract simpleNFT is IERC721Metadata, IERC721Enumerable, ERC721Interface {
     mapping(address => mapping(address => bool)) private operatorApprovals;
 
     constructor(string memory _name, string memory _symbol, uint _totalSupply){
-        _name = name;
-        _symbol = symbol;
-        _totalSupply = totalSupply;
+        name = _name;
+        symbol = _symbol;
+        totalSupply = _totalSupply;
 
     }
 
     function mint(address _to, uint _tokenId) public {
-        require((allTokens.length - 1) < totalSupply);
+        require(tokenIndex < totalSupply);
         require(owners[_tokenId] == address(0));
 
         balances[_to] += 1;
