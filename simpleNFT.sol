@@ -6,7 +6,7 @@ interface IERC721Metadata {
   
     function name() external view returns (string memory);
     function symbol() external view returns (string memory);
-    //function tokenURI(uint256 tokenId) external view returns (string memory);
+    function tokenURI(uint256 tokenId) external view returns (string memory);
 }
 
 interface IERC721Enumerable {
@@ -45,22 +45,22 @@ contract simpleNFT is IERC721Metadata, IERC721Enumerable, ERC721Interface {
 
     uint[] public allTokens;
 
-    mapping(address => uint[]) public ownedTokens;
+    mapping(address => uint[]) ownedTokens;
     
-    mapping(uint => uint) public tokensByIndex;
+    mapping(uint => uint) tokenIdByIndex;
     uint tokenIndex = 0;
 
-    mapping(uint => address) public tokenOwnersByIndex;
+    mapping(uint => address) tokenOwnersByIndex;
 
-    mapping(uint => string) public tokenURIs;
+    string[] tokenURIs;
 
-    mapping(address => uint) public balances;
+    mapping(address => uint) balances;
 
-    mapping(uint => address) public owners;
+    mapping(uint => address) owners;
 
     mapping(uint => address) approved;
 
-    mapping(address => mapping(address => bool)) private operatorApprovals;
+    mapping(address => mapping(address => bool)) operatorApprovals;
 
     constructor(string memory _name, string memory _symbol, uint _totalSupply){
         name = _name;
@@ -69,7 +69,13 @@ contract simpleNFT is IERC721Metadata, IERC721Enumerable, ERC721Interface {
 
     }
 
-    function mint(address _to, uint _tokenId) public {
+    function createNFT(address _to, string memory _tokenURI) public {
+        tokenURIs.push(_tokenURI);
+        uint _tokenId = tokenURIs.length - 1;
+        mint(_to, _tokenId);
+    }
+
+    function mint(address _to, uint _tokenId) private {
         require(tokenIndex < totalSupply);
         require(owners[_tokenId] == address(0));
 
@@ -77,20 +83,24 @@ contract simpleNFT is IERC721Metadata, IERC721Enumerable, ERC721Interface {
         owners[_tokenId] = _to;
         allTokens.push(_tokenId);
 
+        tokenOwnersByIndex[_tokenId] = _to;
+        tokenIdByIndex[tokenIndex] = _tokenId;
+        ownedTokens[_to].push(_tokenId);
+
         tokenIndex ++;
     }
 
     function tokenByIndex(uint _index) override public view returns(uint) {
-        return tokensByIndex[_index];
+        return tokenIdByIndex[_index];
     }
 
     function tokenOfOwnerByIndex(address _owner, uint _index) override public view returns(uint) {
         return ownedTokens[_owner][_index];
     }
 
-    // function tokenURI(uint _tokenId) override public view returns(string memory) {
-    //     tokenURIs[_tokenId];
-    // }
+    function tokenURI(uint _tokenId) override public view returns(string memory) {
+        return tokenURIs[_tokenId];
+    }
 
     function balanceOf(address _owner) override public view returns(uint) {
         return balances[_owner];
