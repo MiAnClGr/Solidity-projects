@@ -79,7 +79,7 @@ contract Freelancer {
 
 contract freelancerFactory {
 
-    mapping(address => JobBooker) public owners;
+    mapping(address => FreeLancer) public owners;
 
      function createFreelancer() public {
         Freelancer freelancer = new Freelancer(msg.sender);
