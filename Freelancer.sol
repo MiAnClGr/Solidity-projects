@@ -18,6 +18,8 @@ contract Freelancer {
         jobState state;
         uint timeClocked;
     }
+    
+    event jobCreated (address client, uint ticketNo);
 
     mapping(uint => Job) public Jobs;
     
@@ -34,12 +36,15 @@ contract Freelancer {
 
     function createJob(string memory _contractName, address _client) public {
         Job storage job = Jobs[jobNumber];
-        jobNumber ++;
-
+       
         //job.cost = _cost;
         job.contractName = _contractName;
         job.client = _client;
         job.state = jobState.created;
+                
+        emit jobCreated(_client, jobNumber)
+        
+        jobNumber ++;
     }
 
     function jobClockStart(uint _jobNumber) public {
