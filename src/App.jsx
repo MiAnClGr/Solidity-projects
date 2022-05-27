@@ -13,6 +13,7 @@ const provider =
         new ethers.providers.Web3Provider(window.ethereum)
 const ICOContract = 
       new ethers.Contract(contractAddress, contractABI, provider);
+const signer = provider.getSigner()
 
 console.log(ICOContract)
 console.log(ICOContract.name())
@@ -23,14 +24,7 @@ function App() {
 
   const [currentAccount, setCurrentAccount] = React.useState('Ox')
   const [userBalance, setUserBalance] = React.useState('')
-  
-
-  const provider = new 
-        ethers.providers.Web3Provider(window.ethereum)
-  const signer = provider.getSigner()
-
-
-
+ 
   console.log(provider)
   console.log(signer)
   console.log(signer.getAddress())
